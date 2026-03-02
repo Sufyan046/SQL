@@ -1,14 +1,16 @@
-from flask import Flask, render_template, request, redirect
-from flask_mysqldb import MySQL
+from flask import Flask, render_template
+import mysql.connector
 
 app = Flask(__name__)
 
-# Database configuration
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '200ms11@sql.'
-app.config['MYSQL_DB'] = 'online_food_delivery'
-
+# Database connection function
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="200ms11@sql.",   # your password
+        database="online_food_delivery"
+    )
 
 @app.route('/')
 def home():
@@ -16,11 +18,14 @@ def home():
 
 @app.route('/restaurants')
 def restaurants():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM Restaurant")
-    data = cur.fetchall()
-    cur.close()
-    return render_template('restaurants.html', restaurants=data)
+    db = get_db_connection()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM Restaurant")
+    data = cursor.fetchall()
+    print("DATA FROM DB:", data)   # Debug
+    cursor.close()
+    db.close()
+    return render_template("restaurants.html", restaurants=data)
 
-
-mysql = MySQL(app)
+if __name__ == '__main__':
+    app.run(debug=True)
